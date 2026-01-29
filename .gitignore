@@ -31,10 +31,32 @@ env/
 *.swo
 *~
 
-# Environment
+# Environment variables and secrets
 .env
 .env.local
 .env.*.local
+.env.*
+!.env.example
+*.env
+!*.env.example
+
+# Secrets and credentials
+secrets/
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+id_rsa
+id_rsa.pub
+*.secret
+credentials.json
+service-account.json
+
+# API Keys and tokens
+**/api_keys.txt
+**/tokens.txt
+**/secrets.txt
 
 # Docker
 *.log
@@ -79,3 +101,73 @@ frontend/build/
 ai_engine/models/
 ai_engine/__pycache__/
 ai_engine/.pytest_cache/
+
+# Generated QR codes (can be regenerated)
+qr_codes/*.png
+!qr_codes/.gitkeep
+
+# Logs
+*.log
+logs/
+/tmp/
+/var/log/
+
+# Build artifacts
+*.zip
+*.tar.gz
+*.apk
+*.ipa
+*.dmg
+*.app
+
+# IDE and editor files
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+.DS_Store
+
+# Mobile build files
+mobile/build/
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.packages
+mobile/.pub-cache/
+mobile/.pub/
+mobile/*.iml
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/app/debug/
+mobile/android/app/release/
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+mobile/ios/Flutter/ephemeral/
+mobile/ios/Flutter/Flutter.framework
+mobile/ios/Flutter/Flutter.podspec
+mobile/ios/ServiceDefinitions.json
+mobile/ios/Runner/GeneratedPluginRegistrant.*
+
+# Frontend build
+frontend/dist/
+frontend/build/
+frontend/.vite/
+
+# Backend
+backend/__pycache__/
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+backend/.coverage
+backend/htmlcov/
+
+# Database dumps
+*.sql.gz
+*.dump
+*.backup
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

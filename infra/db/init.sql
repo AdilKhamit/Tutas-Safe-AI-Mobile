@@ -1,8 +1,8 @@
 -- Initialize PostGIS extension
 CREATE EXTENSION IF NOT EXISTS postgis;
 
--- Initialize TimescaleDB extension
-CREATE EXTENSION IF NOT EXISTS timescaledb;
+-- Initialize TimescaleDB extension (if available)
+-- CREATE EXTENSION IF NOT EXISTS timescaledb;
 
 -- Create schema for Tutas Ai
 CREATE SCHEMA IF NOT EXISTS tutas_ai;

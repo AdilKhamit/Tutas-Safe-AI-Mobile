@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Базовые entitlements для личной команды разработчика -->
+	<!-- Push Notifications и Associated Domains требуют платную команду разработчика -->
+	<!-- Для личной команды оставляем файл пустым или добавляем только базовые возможности -->
+</dict>
+</plist>

@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # PostgreSQL 16 with PostGIS and TimescaleDB
   db:
-    image: timescale/timescaledb-ha:pg16-latest
+    image: postgis/postgis:16-3.4
     container_name: tutas_ai_db
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -45,7 +45,7 @@ services:
   # MinIO S3-compatible object storage
   minio:
     image: minio/minio:latest
-    container_name: pipeline_monitoring_minio
+    container_name: tutas_ai_minio
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
@@ -90,10 +90,14 @@ services:
     container_name: tutas_ai_traefik
     command:
       - "--api.insecure=true"
+      - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.watch=true"
+      - "--providers.docker.network=tutasai_tutas_ai_network"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.traefik.address=:8080"
       - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
       - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-admin@example.com}"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
@@ -110,6 +114,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN:-localhost}`)"
       - "traefik.http.routers.traefik.entrypoints=web"
+      - "traefik.http.routers.traefik.priority=10"
     restart: unless-stopped
 
   # Backend FastAPI Service
@@ -133,6 +138,7 @@ services:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:
       - ./backend:/app
+      - ./scripts:/scripts
       - backend_cache:/app/.cache
     networks:
       - tutas_ai_network
@@ -151,6 +157,51 @@ services:
     restart: unless-stopped
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
+  # AI Engine ML Service
+  ai-engine:
+    build:
+      context: ./ai_engine
+      dockerfile: Dockerfile
+    container_name: tutas_ai_ai_engine
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    ports:
+      - "${AI_ENGINE_PORT:-8001}:8001"
+    volumes:
+      - ./ai_engine:/app
+      - ai_engine_cache:/app/.cache
+    networks:
+      - tutas_ai_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ai-engine.rule=Host(`ai.${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.ai-engine.entrypoints=web"
+      - "traefik.http.services.ai-engine.loadbalancer.server.port=8001"
+    restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+
+  # Frontend React Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tutas_ai_frontend
+    ports:
+      - "3000:80"
+    networks:
+      - tutas_ai_network
+    depends_on:
+      - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN:-localhost}`) && PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.routers.frontend.priority=200"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+      - "traefik.docker.network=tutasai_tutas_ai_network"
+    restart: unless-stopped
+
 volumes:
   postgres_data:
     driver: local
@@ -161,6 +212,8 @@ volumes:
   traefik_letsencrypt:
     driver: local
   backend_cache:
+    driver: local
+  ai_engine_cache:
     driver: local
 
 networks:

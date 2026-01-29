@@ -1,0 +1,32 @@
+name: Security Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Check for .env files
+        run: |
+          if find . -name ".env" -not -path "./.git/*" | grep -q .; then
+            echo "❌ ERROR: .env files found in repository!"
+            find . -name ".env" -not -path "./.git/*"
+            exit 1
+          else
+            echo "✅ No .env files found"
+          fi
+      
+      - name: Check for common secrets
+        run: |
+          if grep -r "password.*=.*[a-zA-Z0-9]\{8,\}" --include="*.py" --include="*.ts" --include="*.tsx" --include="*.yaml" --include="*.yml" | grep -v "CHANGE_THIS" | grep -v ".env.example" | grep -v ".github" | grep -q .; then
+            echo "⚠️  WARNING: Potential hardcoded passwords found"
+            grep -r "password.*=.*[a-zA-Z0-9]\{8,\}" --include="*.py" --include="*.ts" --include="*.tsx" --include="*.yaml" --include="*.yml" | grep -v "CHANGE_THIS" | grep -v ".env.example" | grep -v ".github" || true
+          else
+            echo "✅ No hardcoded passwords found"
+          fi
