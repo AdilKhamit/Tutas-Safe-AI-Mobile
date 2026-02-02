@@ -69,10 +69,4 @@ docker-compose up -d
 - `tutas-reports` - Отчеты
 - `tutas-models` - ML модели
 
-## Статус
 
-✅ Промпт 1: Инициализация инфраструктуры и Docker - ЗАВЕРШЕН
-⏳ Промпт 2: Проектирование Базы Данных (SQLAlchemy) - ОЖИДАЕТ
-⏳ Промпт 3: Backend API Core (FastAPI) - ОЖИДАЕТ
-⏳ Промпт 4: Мобильное приложение (Flutter) - ОЖИДАЕТ
-⏳ Промпт 5: AI Engine Skeleton - ОЖИДАЕТ
