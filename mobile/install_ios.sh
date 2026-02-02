@@ -1,122 +1,77 @@
 #!/bin/bash
-
-# Скрипт для установки Tutas Ai Mobile на iPhone
+# Скрипт для установки приложения на iPhone
 
 set -e
 
-echo "🍎 Установка Tutas Ai Mobile на iPhone"
-echo ""
+echo "📱 Установка Tutas AI Mobile на iPhone"
+echo "======================================"
 
-# Переход в директорию mobile
-cd "$(dirname "$0")"
+# Цвета
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
 
 # Проверка Flutter
 if ! command -v flutter &> /dev/null; then
-    echo "❌ Flutter не установлен или не в PATH!"
-    echo ""
-    echo "Установите Flutter одним из способов:"
-    echo ""
-    echo "1. Автоматическая установка (рекомендуется):"
-    echo "   ./setup_flutter.sh"
-    echo ""
-    echo "2. Через Homebrew:"
-    echo "   brew install --cask flutter"
-    echo ""
-    echo "3. Ручная установка:"
-    echo "   git clone https://github.com/flutter/flutter.git -b stable ~/flutter"
-    echo "   export PATH=\"\$PATH:\$HOME/flutter/bin\""
-    echo "   echo 'export PATH=\"\$PATH:\$HOME/flutter/bin\"' >> ~/.zshrc"
-    echo ""
-    read -p "Запустить автоматическую установку Flutter? (y/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        if [ -f "setup_flutter.sh" ]; then
-            ./setup_flutter.sh
-            # Перезагрузить PATH
-            source ~/.zshrc 2>/dev/null || true
-        else
-            echo "Скрипт setup_flutter.sh не найден"
-            exit 1
-        fi
-    else
-        exit 1
-    fi
-    
-    # Проверка еще раз
-    if ! command -v flutter &> /dev/null; then
-        echo ""
-        echo "⚠️  Flutter все еще не найден. Перезапустите терминал и попробуйте снова."
-        exit 1
-    fi
-fi
-
-# Проверка Xcode
-if ! command -v xcodebuild &> /dev/null; then
-    echo "❌ Xcode не установлен!"
-    echo "Установите Xcode из App Store"
+    echo -e "${RED}✗ Flutter не установлен${NC}"
     exit 1
 fi
 
-echo "📦 Проверка зависимостей..."
-flutter doctor
+echo -e "\n${YELLOW}1. Проверка подключенных устройств...${NC}"
+DEVICES=$(flutter devices | grep "ios" | grep -v "macos" | head -1)
 
-echo ""
-echo "📱 Проверка подключенных устройств..."
-DEVICES=$(flutter devices | grep -i "iphone\|ios" || echo "")
 if [ -z "$DEVICES" ]; then
-    echo "⚠️  iPhone не обнаружен"
-    echo ""
-    echo "Убедитесь, что:"
-    echo "1. iPhone подключен через USB"
-    echo "2. На iPhone нажато 'Доверять этому компьютеру'"
-    echo "3. На iPhone включен режим разработчика (Настройки > Конфиденциальность > Режим разработчика)"
-    echo ""
-    read -p "Продолжить установку? (y/n) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        exit 1
-    fi
+    echo -e "${RED}✗ iPhone не подключен${NC}"
+    echo "Подключите iPhone через USB и доверьте этому компьютеру"
+    exit 1
 fi
 
-echo ""
-echo "📦 Установка зависимостей Flutter..."
+DEVICE_ID=$(echo "$DEVICES" | awk '{print $5}')
+DEVICE_NAME=$(echo "$DEVICES" | awk '{print $1, $2, $3, $4}')
+
+echo -e "${GREEN}✓ Найдено устройство: $DEVICE_NAME${NC}"
+echo -e "${GREEN}✓ Device ID: $DEVICE_ID${NC}"
+
+# Проверка .env файла
+echo -e "\n${YELLOW}2. Проверка конфигурации...${NC}"
+if [ ! -f .env ]; then
+    echo -e "${YELLOW}Создание .env файла...${NC}"
+    
+    # Получение IP адреса
+    IP_ADDRESS=$(ifconfig | grep "inet " | grep -v 127.0.0.1 | head -1 | awk '{print $2}')
+    
+    if [ -z "$IP_ADDRESS" ]; then
+        IP_ADDRESS="localhost"
+    fi
+    
+    cat > .env << EOF
+API_BASE_URL=http://$IP_ADDRESS:8000
+API_KEY=dev-api-key-12345
+EOF
+    echo -e "${GREEN}✓ Создан .env файл с IP: $IP_ADDRESS${NC}"
+else
+    echo -e "${GREEN}✓ .env файл существует${NC}"
+fi
+
+# Установка зависимостей
+echo -e "\n${YELLOW}3. Установка зависимостей...${NC}"
 flutter pub get
 
-echo ""
-echo "🔨 Создание iOS проекта (если не существует)..."
-if [ ! -d "ios" ]; then
-    echo "Создание iOS платформы..."
-    flutter create --platforms=ios .
-fi
+# Очистка
+echo -e "\n${YELLOW}4. Очистка проекта...${NC}"
+flutter clean
 
-echo ""
-echo "🔧 Настройка для физического устройства..."
+# Сборка и установка
+echo -e "\n${YELLOW}5. Сборка и установка на iPhone...${NC}"
+echo -e "${YELLOW}Это может занять несколько минут...${NC}"
 
-# Обновление IP адреса API если нужно
-read -p "Использовать IP-адрес для API? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    read -p "Введите IP-адрес вашего компьютера (например, 192.168.8.108): " IP_ADDRESS
-    if [ -n "$IP_ADDRESS" ]; then
-        echo "Использование IP: http://$IP_ADDRESS:8000"
-        API_URL="http://$IP_ADDRESS:8000"
-    fi
-fi
+flutter run -d "$DEVICE_ID" --release
 
-echo ""
-echo "🚀 Сборка и установка на iPhone..."
-echo "Это может занять несколько минут..."
-
-if [ -n "$API_URL" ]; then
-    flutter run --dart-define=API_BASE_URL=$API_URL
-else
-    flutter run
-fi
-
-echo ""
-echo "✅ Готово!"
-echo ""
-echo "Если установка не удалась, попробуйте:"
-echo "1. Открыть ios/Runner.xcworkspace в Xcode"
-echo "2. Выбрать ваше устройство в списке"
-echo "3. Нажать Run (▶️)"
+echo -e "\n${GREEN}✅ Установка завершена!${NC}"
+echo -e "\n${YELLOW}Следующие шаги:${NC}"
+echo "1. На iPhone: Settings > General > VPN & Device Management"
+echo "2. Найдите приложение и нажмите 'Trust'"
+echo "3. Откройте приложение и войдите:"
+echo "   Email: test@tutas.ai"
+echo "   Password: test123456"

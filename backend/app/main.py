@@ -5,7 +5,7 @@ import logging
 from fastapi import FastAPI, Request, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from app.api.routes import pipes, chat
+from app.api.routes import pipes, chat, auth
 from app.core.config import settings
 
 # Configure logging
@@ -45,8 +45,9 @@ VALID_API_KEYS = [
 @app.middleware("http")
 async def api_key_middleware(request: Request, call_next):
     """Optional API key authentication middleware"""
-    # Skip authentication for health check and docs
-    if request.url.path in ["/health", "/docs", "/redoc", "/openapi.json", "/"]:
+    # Skip authentication for health check, docs, and auth endpoints
+    skip_paths = ["/health", "/docs", "/redoc", "/openapi.json", "/", "/api/v1/auth/login", "/api/v1/auth/register"]
+    if request.url.path in skip_paths or request.url.path.startswith("/api/v1/auth/"):
         return await call_next(request)
     
     # Skip authentication in development mode
@@ -89,6 +90,7 @@ async def api_key_middleware(request: Request, call_next):
     return await call_next(request)
 
 # Include routers
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(pipes.router, prefix="/api/v1/pipes", tags=["pipes"])
 app.include_router(chat.router, prefix="/api/v1", tags=["chat"])
 

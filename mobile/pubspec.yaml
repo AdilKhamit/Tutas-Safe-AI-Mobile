@@ -71,6 +71,9 @@ dependencies:
   # Image Caching
   cached_network_image: ^3.3.1
   flutter_cache_manager: ^3.3.1
+  
+  # File Sharing
+  share_plus: ^7.2.1
 
 dev_dependencies:
   flutter_test:

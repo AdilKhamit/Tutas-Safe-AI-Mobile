@@ -1,6 +1,6 @@
 """
 API Routes
 """
-from . import pipes, chat
+from . import pipes, chat, auth
 
-__all__ = ["pipes", "chat"]
+__all__ = ["pipes", "chat", "auth"]

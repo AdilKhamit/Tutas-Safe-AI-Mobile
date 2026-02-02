@@ -6,6 +6,7 @@ from .pipes import Pipe
 from .inspections import Inspection
 from .defects import Defect
 from .measurements import Measurement
+from .users import User
 
 __all__ = [
     "Base",
@@ -15,4 +16,5 @@ __all__ = [
     "Inspection",
     "Defect",
     "Measurement",
+    "User",
 ]
