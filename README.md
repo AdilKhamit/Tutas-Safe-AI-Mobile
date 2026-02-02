@@ -63,13 +63,33 @@ make seed
 
 *Output should show: "✅ Created 10 pipes", "Generated measurements", etc.*
 
-### 4. Access Services
+### 4. Setup Authentication
+
+Create users table and register first user:
+
+```bash
+# Option 1: Using setup script
+./scripts/setup_auth.sh
+
+# Option 2: Using Python script
+python3 scripts/register_user.py test@tutas.ai test123456 "Test User"
+```
+
+**Default Test Credentials:**
+- Email: `test@tutas.ai`
+- Password: `test123456`
+
+See [QUICK_AUTH_SETUP.md](QUICK_AUTH_SETUP.md) for detailed instructions.
+
+### 5. Access Services
 
 | Service | URL | Credentials |
 | --- | --- | --- |
-| **Web Portal** | `http://localhost` | N/A (Demo Mode) |
+| **Web Portal** | `http://localhost:3000` | N/A (Demo Mode) |
 | **API Docs** | `http://localhost:8000/docs` | N/A |
-| **MinIO Console** | `http://localhost:9001` | admin / password |
+| **API Health** | `http://localhost:8000/health` | N/A |
+| **MinIO Console** | `http://localhost:9001` | minioadmin / minioadmin |
+| **Traefik Dashboard** | `http://localhost:8080` | N/A |
 
 ---
 
@@ -87,7 +107,9 @@ flutter run
 
 ### Installation on Phone
 
-**Быстрая установка (Android):**
+#### Android Installation
+
+**Быстрая установка:**
 ```bash
 cd mobile
 ./install.sh
@@ -101,6 +123,39 @@ flutter build apk --release
 # APK будет в: build/app/outputs/flutter-apk/app-release.apk
 ```
 
+#### iOS Installation
+
+**Через Xcode (Рекомендуется):**
+```bash
+cd mobile
+open ios/Runner.xcworkspace
+# В Xcode: выберите устройство и нажмите Run (▶️)
+```
+
+**Через Flutter CLI:**
+```bash
+cd mobile
+flutter clean
+flutter pub get
+cd ios && pod install && cd ..
+flutter run
+```
+
+📖 **Подробные инструкции:**
+- Android: [mobile/INSTALL.md](mobile/INSTALL.md)
+- iOS: [mobile/INSTALL_TO_IPHONE.md](mobile/INSTALL_TO_IPHONE.md)
+
+### Mobile App Features
+
+- ✅ **JWT Authentication** - Secure login with refresh tokens
+- ✅ **Offline-First Architecture** - Works without internet connection
+- ✅ **QR Code Scanner** - Scan pipe QR codes for quick access
+- ✅ **Defect Reporting** - Report defects with photos and metadata
+- ✅ **Auto-Sync** - Automatic synchronization when connection restored
+- ✅ **Conflict Resolution** - Handle sync conflicts with server
+- ✅ **Network Status** - Real-time connectivity monitoring
+- ✅ **Image Caching** - Efficient image loading and caching
+
 **Важно для физического устройства:**
 1. Узнайте IP-адрес вашего компьютера:
    ```bash
@@ -108,13 +163,12 @@ flutter build apk --release
    # Или на Windows: ipconfig
    ```
 
-2. Обновите IP-адрес API в `mobile/lib/repositories/defect_repository.dart`:
-   - Замените `localhost` на IP вашего компьютера (например, `192.168.1.100`)
-   - Или используйте переменную окружения: `flutter run --dart-define=API_BASE_URL=http://192.168.1.100:8000`
+2. Создайте `.env` файл в `mobile/`:
+   ```bash
+   API_BASE_URL=http://your-computer-ip:8000
+   ```
 
 3. Убедитесь, что телефон и компьютер в одной Wi-Fi сети
-
-📖 **Подробные инструкции:** см. [mobile/INSTALL.md](mobile/INSTALL.md)
 
 ---
 
@@ -122,21 +176,53 @@ flutter build apk --release
 
 We provide a `Makefile` to simplify daily operations:
 
-* `make up` - Start system
-* `make down` - Stop system
-* `make logs` - View real-time logs
+### Basic Commands
+* `make up` - Start all services in background
+* `make down` - Stop all services
 * `make restart` - Restart all services
+* `make logs` - View real-time logs from all services
+* `make logs-backend` - View backend logs only
+* `make logs-frontend` - View frontend logs only
+* `make logs-db` - View database logs only
+
+### Database Commands
+* `make seed` - Seed database with demo data
+* `make seed-simple` - Seed database using SQL script (alternative)
+
+### Build Commands
+* `make build` - Build all Docker images
+* `make rebuild` - Rebuild all Docker images (no cache)
 * `make clean` - Clean temporary files
+* `make clean-all` - Clean everything including Docker volumes
+
+### Utility Commands
+* `make init` - Initialize project (copy .env, build, start, seed)
+* `make status` - Show project status and access URLs
+* `make health` - Check health of all services
+* `make check` - Check if all services are running
+* `make shell-backend` - Open shell in backend container
+* `make shell-db` - Open PostgreSQL shell
+
+Run `make help` to see all available commands.
 
 ---
 
 ## 🤖 AI Features
 
-The **AI Engine** (`/ai_engine`) provides:
+The **AI Engine** (`/ai_engine`) provides advanced predictive analytics:
 
-1. **Lifetime Prediction:** Extrapolates wall thickness degradation for 5 years.
-2. **Risk Assessment:** Calculates failure probability using Normal Distribution CDF.
-3. **Smart Intervals:** Computes dynamic confidence intervals based on historical data variance (MSE).
+1. **Lifetime Prediction:** Extrapolates wall thickness degradation for 5 years using Linear Regression
+2. **Risk Assessment:** Calculates failure probability using Normal Distribution CDF
+3. **Smart Intervals:** Computes dynamic confidence intervals based on historical data variance (MSE)
+4. **Trend Analysis:** Identifies degradation patterns and predicts future measurements
+5. **Confidence Scoring:** Provides confidence levels for predictions based on data quality
+
+### AI Model Details
+
+- **Algorithm:** Scikit-learn Linear Regression
+- **Input:** Historical wall thickness measurements
+- **Output:** 5-year forecast with confidence intervals
+- **Risk Calculation:** Normal distribution-based failure probability
 
 ---
 
@@ -151,22 +237,32 @@ This is a **production-ready prototype** with strong architecture and core funct
 ### ✅ Completed Features
 
 - **Backend API**: Full CRUD operations, PDF generation, AI integration
+- **Authentication**: ✅ Complete JWT-based authentication with login, register, refresh tokens, and user management
 - **AI Engine**: Linear Regression model with confidence intervals and failure probability
-- **Mobile App**: QR scanner, offline-first data sync, defect reporting
+- **Mobile App**: 
+  - ✅ QR scanner with improved scanning
+  - ✅ Offline-first architecture with Drift DB
+  - ✅ Defect reporting with photo support
+  - ✅ JWT authentication with secure token storage
+  - ✅ Auto-sync with conflict resolution
+  - ✅ Network status monitoring
+  - ✅ Image caching and optimization
+  - ✅ iOS and Android support
 - **Frontend Dashboard**: Interactive maps, statistics, charts
 - **Infrastructure**: Docker Compose, database seeding, CI/CD pipeline
 
 ### 🚧 In Progress / Known Limitations
 
-- **Authentication**: JWT infrastructure exists but login/register endpoints not implemented
-- **Mobile Camera**: Photo capture for defects is placeholder (TODO)
+- **Mobile Camera**: Photo capture works but could be enhanced with better UI
 - **Frontend Integration**: Some components use mock data as fallback
 - **Tests**: Test suite structure exists but needs expansion
+- **Push Notifications**: Not yet implemented
+- **Analytics**: Not yet integrated
 
 ### 🎯 Production Readiness
 
 - **For Demo/Presentation**: ✅ Ready (all core features work)
-- **For Enterprise Production**: ⚠️ Requires authentication, testing, and camera implementation
+- **For Enterprise Production**: ⚠️ Requires comprehensive testing, push notifications, and analytics integration
 
 ---
 
@@ -180,10 +276,26 @@ This is a **production-ready prototype** with strong architecture and core funct
 
 ## 📚 Documentation
 
+### Authentication
+- [Authentication Complete](AUTHENTICATION_COMPLETE.md) - Authentication system overview
+- [Quick Auth Setup](QUICK_AUTH_SETUP.md) - Quick start for authentication
+- [Authentication Setup](AUTHENTICATION_SETUP.md) - Complete authentication guide
+
+### Mobile App
+- [Mobile Installation (Android)](mobile/INSTALL.md) - Android installation guide
+- [Mobile Installation (iOS)](mobile/INSTALL_TO_IPHONE.md) - iOS installation guide
+- [Mobile Architecture](mobile/ARCHITECTURE.md) - Mobile app architecture
+- [QR Code Troubleshooting](mobile/QR_CODE_TROUBLESHOOTING.md) - QR scanning issues
+- [Mobile Quick Start](mobile/QUICK_START.md) - Mobile app quick start
+
+### Deployment & Infrastructure
 - [Deployment Guide](DEPLOYMENT.md) - Production deployment instructions
 - [Security Guidelines](SECURITY.md) - Security best practices
-- [Mobile App Installation](mobile/INSTALL.md) - Mobile app setup
-- [QR Code Troubleshooting](mobile/QR_CODE_TROUBLESHOOTING.md) - QR scanning issues
+- [Project Info](PROJECT_INFO.md) - Project structure and information
+
+### AI & Backend
+- [Ollama Setup](backend/OLLAMA_SETUP.md) - Ollama AI setup
+- [LLama Setup](LLAMA_SETUP.md) - LLama model setup
 
 ## 🤝 Contributing
 
