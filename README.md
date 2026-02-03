@@ -1,4 +1,4 @@
-# Tutas Safe AI Platform 🚀
+# Tutas Safe AI Platform
 
 **Enterprise-Grade Pipeline Monitoring & Predictive Analytics System**
 
@@ -12,29 +12,65 @@ Tutas Safe AI is a comprehensive digital ecosystem for industrial pipeline inspe
 
 ---
 
-## 🏗 System Architecture
+## Table of Contents
 
-The platform follows a microservices architecture:
-
-* **Backend:** Python 3.11, FastAPI (High-performance Async API)
-* **Database:** PostgreSQL 16 + PostGIS (Geo) + TimescaleDB (Time-series)
-* **AI Engine:** Scikit-learn Linear Regression (Trend analysis & Confidence Intervals)
-* **Frontend:** React 18, TypeScript, Ant Design, Leaflet Maps
-* **Mobile:** Flutter (Offline-first architecture with Drift DB)
-* **Infrastructure:** Docker Compose, Nginx, Traefik, Redis, MinIO
+- [System Architecture](#system-architecture)
+- [Quick Start](#quick-start)
+- [Components](#components)
+- [Development](#development)
+- [Deployment](#deployment)
+- [Security](#security)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
 
 ---
 
-## 🚀 Quick Start (Production)
+## System Architecture
 
-Follow these steps to deploy the system in 5 minutes.
+The platform follows a microservices architecture:
+
+- **Backend:** Python 3.11, FastAPI (High-performance Async API)
+- **Database:** PostgreSQL 16 + PostGIS (Geo) + TimescaleDB (Time-series)
+- **AI Engine:** Hybrid Model (Prophet + LSTM) for predictive analytics
+- **Frontend:** React 18, TypeScript, Ant Design, Leaflet Maps
+- **Mobile:** Flutter (Offline-first architecture with Drift DB)
+- **Infrastructure:** Docker Compose, Nginx, Traefik, Redis, MinIO
+
+### Architecture Diagram
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Mobile    │────▶│   Backend   │────▶│  Database   │
+│  (Flutter)  │     │  (FastAPI)  │     │ (PostgreSQL)│
+└─────────────┘     └─────────────┘     └─────────────┘
+                            │
+                            ▼
+                    ┌─────────────┐
+                    │  AI Engine  │
+                    │ (Prophet +  │
+                    │    LSTM)    │
+                    └─────────────┘
+                            │
+                            ▼
+                    ┌─────────────┐
+                    │   Frontend  │
+                    │   (React)   │
+                    └─────────────┘
+```
+
+---
+
+## Quick Start
 
 ### Prerequisites
-* Docker & Docker Compose
-* Make (optional, for convenience)
+
+- Docker & Docker Compose 2.0+
+- Make (optional, for convenience)
+- 4GB+ RAM available
+- 10GB+ disk space
 
 ### 1. Configure Environment
-Copy the example environment file:
+
 ```bash
 cp .env.example .env
 # Edit .env and change all default passwords and secrets!
@@ -44,8 +80,6 @@ cp .env.example .env
 
 ### 2. Build & Launch
 
-Use the Makefile to build and start all services:
-
 ```bash
 make build
 make up
@@ -53,15 +87,13 @@ make up
 
 *Wait ~30 seconds for the database to initialize.*
 
-### 3. Seed Demo Data (Critical for Demo!)
+### 3. Seed Demo Data
 
-Populate the empty database with 10 pipes, 5 years of measurement history, and AI predictions:
+Populate the database with demo data (10 pipes, 5 years of measurements, AI predictions):
 
 ```bash
 make seed
 ```
-
-*Output should show: "✅ Created 10 pipes", "Generated measurements", etc.*
 
 ### 4. Setup Authentication
 
@@ -79,13 +111,11 @@ python3 scripts/register_user.py test@tutas.ai test123456 "Test User"
 - Email: `test@tutas.ai`
 - Password: `test123456`
 
-See [QUICK_AUTH_SETUP.md](QUICK_AUTH_SETUP.md) for detailed instructions.
-
 ### 5. Access Services
 
 | Service | URL | Credentials |
 | --- | --- | --- |
-| **Web Portal** | `http://localhost:3000` | N/A (Demo Mode) |
+| **Web Portal** | `http://localhost:3000` | N/A |
 | **API Docs** | `http://localhost:8000/docs` | N/A |
 | **API Health** | `http://localhost:8000/health` | N/A |
 | **MinIO Console** | `http://localhost:9001` | minioadmin / minioadmin |
@@ -93,219 +123,201 @@ See [QUICK_AUTH_SETUP.md](QUICK_AUTH_SETUP.md) for detailed instructions.
 
 ---
 
-## 📱 Mobile App
+## Components
 
-### Development
+### Backend API
 
-To run the engineer's mobile application:
+FastAPI-based backend service providing RESTful API for pipeline management.
 
-```bash
-cd mobile
-flutter pub get
-flutter run
-```
+**Features:**
+- Full CRUD operations for pipes, inspections, defects
+- JWT-based authentication
+- PDF report generation
+- QR code generation
+- Integration with AI Engine
 
-### Installation on Phone
+**Documentation:** [backend/README.md](backend/README.md)
 
-#### Android Installation
+### AI Engine
 
-**Быстрая установка:**
-```bash
-cd mobile
-./install.sh
-```
+ML prediction service using hybrid model (Prophet + LSTM) for 5-year lifetime forecasting.
 
-**Или вручную:**
-```bash
-cd mobile
-flutter pub get
-flutter build apk --release
-# APK будет в: build/app/outputs/flutter-apk/app-release.apk
-```
+**Features:**
+- Time series forecasting with Prophet
+- Non-linear pattern learning with LSTM
+- Confidence intervals and risk assessment
+- Status classification (Ok/Warning/Critical)
 
-#### iOS Installation
+**Documentation:** [ai_engine/README.md](ai_engine/README.md)
 
-**Через Xcode (Рекомендуется):**
-```bash
-cd mobile
-open ios/Runner.xcworkspace
-# В Xcode: выберите устройство и нажмите Run (▶️)
-```
+### Frontend Dashboard
 
-**Через Flutter CLI:**
-```bash
-cd mobile
-flutter clean
-flutter pub get
-cd ios && pod install && cd ..
-flutter run
-```
+React-based web portal for real-time monitoring and management.
 
-📖 **Подробные инструкции:**
-- Android: [mobile/INSTALL.md](mobile/INSTALL.md)
-- iOS: [mobile/INSTALL_TO_IPHONE.md](mobile/INSTALL_TO_IPHONE.md)
+**Features:**
+- Interactive maps with Leaflet
+- Real-time statistics and charts
+- Defect trend analysis
+- Responsive design
 
-### Mobile App Features
+**Documentation:** [frontend/README.md](frontend/README.md)
 
-- ✅ **JWT Authentication** - Secure login with refresh tokens
-- ✅ **Offline-First Architecture** - Works without internet connection
-- ✅ **QR Code Scanner** - Scan pipe QR codes for quick access
-- ✅ **Defect Reporting** - Report defects with photos and metadata
-- ✅ **Auto-Sync** - Automatic synchronization when connection restored
-- ✅ **Conflict Resolution** - Handle sync conflicts with server
-- ✅ **Network Status** - Real-time connectivity monitoring
-- ✅ **Image Caching** - Efficient image loading and caching
+### Mobile Application
 
-**Важно для физического устройства:**
-1. Узнайте IP-адрес вашего компьютера:
-   ```bash
-   ifconfig | grep "inet " | grep -v 127.0.0.1
-   # Или на Windows: ipconfig
-   ```
+Flutter mobile app with offline-first architecture for field engineers.
 
-2. Создайте `.env` файл в `mobile/`:
-   ```bash
-   API_BASE_URL=http://your-computer-ip:8000
-   ```
+**Features:**
+- Offline-first with local SQLite database
+- QR code scanner for quick pipe access
+- Defect reporting with photo capture
+- Auto-sync with conflict resolution
+- JWT authentication with secure storage
 
-3. Убедитесь, что телефон и компьютер в одной Wi-Fi сети
+**Documentation:** [mobile/README.md](mobile/README.md)
 
 ---
 
-## 🛠 Management Commands
+## Development
+
+### Management Commands
 
 We provide a `Makefile` to simplify daily operations:
 
-### Basic Commands
-* `make up` - Start all services in background
-* `make down` - Stop all services
-* `make restart` - Restart all services
-* `make logs` - View real-time logs from all services
-* `make logs-backend` - View backend logs only
-* `make logs-frontend` - View frontend logs only
-* `make logs-db` - View database logs only
+**Basic Commands:**
+- `make up` - Start all services
+- `make down` - Stop all services
+- `make restart` - Restart all services
+- `make logs` - View real-time logs
+- `make status` - Show project status
 
-### Database Commands
-* `make seed` - Seed database with demo data
-* `make seed-simple` - Seed database using SQL script (alternative)
+**Database Commands:**
+- `make seed` - Seed database with demo data
+- `make shell-db` - Open PostgreSQL shell
 
-### Build Commands
-* `make build` - Build all Docker images
-* `make rebuild` - Rebuild all Docker images (no cache)
-* `make clean` - Clean temporary files
-* `make clean-all` - Clean everything including Docker volumes
-
-### Utility Commands
-* `make init` - Initialize project (copy .env, build, start, seed)
-* `make status` - Show project status and access URLs
-* `make health` - Check health of all services
-* `make check` - Check if all services are running
-* `make shell-backend` - Open shell in backend container
-* `make shell-db` - Open PostgreSQL shell
+**Build Commands:**
+- `make build` - Build all Docker images
+- `make rebuild` - Rebuild all images (no cache)
+- `make clean` - Clean temporary files
 
 Run `make help` to see all available commands.
 
----
+### Development Setup
 
-## 🤖 AI Features
+#### Backend
 
-The **AI Engine** (`/ai_engine`) provides advanced predictive analytics:
+```bash
+cd backend
+poetry install
+poetry run uvicorn app.main:app --reload
+```
 
-1. **Lifetime Prediction:** Extrapolates wall thickness degradation for 5 years using Linear Regression
-2. **Risk Assessment:** Calculates failure probability using Normal Distribution CDF
-3. **Smart Intervals:** Computes dynamic confidence intervals based on historical data variance (MSE)
-4. **Trend Analysis:** Identifies degradation patterns and predicts future measurements
-5. **Confidence Scoring:** Provides confidence levels for predictions based on data quality
+#### Frontend
 
-### AI Model Details
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-- **Algorithm:** Scikit-learn Linear Regression
-- **Input:** Historical wall thickness measurements
-- **Output:** 5-year forecast with confidence intervals
-- **Risk Calculation:** Normal distribution-based failure probability
+#### Mobile
 
----
-
----
-
-## 📊 Project Status
-
-**Current Version: MVP (Minimum Viable Product)**
-
-This is a **production-ready prototype** with strong architecture and core functionality, but some features are still in development:
-
-### ✅ Completed Features
-
-- **Backend API**: Full CRUD operations, PDF generation, AI integration
-- **Authentication**: ✅ Complete JWT-based authentication with login, register, refresh tokens, and user management
-- **AI Engine**: Linear Regression model with confidence intervals and failure probability
-- **Mobile App**: 
-  - ✅ QR scanner with improved scanning
-  - ✅ Offline-first architecture with Drift DB
-  - ✅ Defect reporting with photo support
-  - ✅ JWT authentication with secure token storage
-  - ✅ Auto-sync with conflict resolution
-  - ✅ Network status monitoring
-  - ✅ Image caching and optimization
-  - ✅ iOS and Android support
-- **Frontend Dashboard**: Interactive maps, statistics, charts
-- **Infrastructure**: Docker Compose, database seeding, CI/CD pipeline
-
-### 🚧 In Progress / Known Limitations
-
-- **Mobile Camera**: Photo capture works but could be enhanced with better UI
-- **Frontend Integration**: Some components use mock data as fallback
-- **Tests**: Test suite structure exists but needs expansion
-- **Push Notifications**: Not yet implemented
-- **Analytics**: Not yet integrated
-
-### 🎯 Production Readiness
-
-- **For Demo/Presentation**: ✅ Ready (all core features work)
-- **For Enterprise Production**: ⚠️ Requires comprehensive testing, push notifications, and analytics integration
+```bash
+cd mobile
+flutter pub get
+flutter run
+```
 
 ---
 
-## 🔒 Security
+## Deployment
+
+For production deployment, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
+**Key considerations:**
+- Change all default passwords
+- Configure SSL/TLS
+- Set up monitoring and logging
+- Configure backup strategy
+- Review security settings
+
+---
+
+## Security
 
 **IMPORTANT:** Before deploying to production:
+
 1. Change all default passwords and secrets
 2. Generate secure API keys
 3. Review [SECURITY.md](SECURITY.md) for best practices
 4. Never commit `.env` files to version control
+5. Configure CORS appropriately
+6. Enable rate limiting
 
-## 📚 Documentation
+---
+
+## Documentation
+
+### Getting Started
+- [Quick Start Guide](#quick-start) - This file
+- [Deployment Guide](DEPLOYMENT.md) - Production deployment
+- [Security Guidelines](SECURITY.md) - Security best practices
 
 ### Authentication
-- [Authentication Complete](AUTHENTICATION_COMPLETE.md) - Authentication system overview
-- [Quick Auth Setup](QUICK_AUTH_SETUP.md) - Quick start for authentication
 - [Authentication Setup](AUTHENTICATION_SETUP.md) - Complete authentication guide
+- [Quick Auth Setup](QUICK_AUTH_SETUP.md) - Quick start for authentication
+
+### Components
+- [Backend API](backend/README.md) - Backend documentation
+- [AI Engine](ai_engine/README.md) - AI Engine documentation
+- [Frontend](frontend/README.md) - Frontend documentation
+- [Mobile App](mobile/README.md) - Mobile app documentation
 
 ### Mobile App
-- [Mobile Installation (Android)](mobile/INSTALL.md) - Android installation guide
-- [Mobile Installation (iOS)](mobile/INSTALL_TO_IPHONE.md) - iOS installation guide
-- [Mobile Architecture](mobile/ARCHITECTURE.md) - Mobile app architecture
+- [Mobile Architecture](mobile/ARCHITECTURE.md) - Architecture overview
+- [Mobile Installation](mobile/INSTALL.md) - Installation guide
 - [QR Code Troubleshooting](mobile/QR_CODE_TROUBLESHOOTING.md) - QR scanning issues
-- [Mobile Quick Start](mobile/QUICK_START.md) - Mobile app quick start
 
-### Deployment & Infrastructure
-- [Deployment Guide](DEPLOYMENT.md) - Production deployment instructions
-- [Security Guidelines](SECURITY.md) - Security best practices
-- [Project Info](PROJECT_INFO.md) - Project structure and information
+### Scripts
+- [Scripts Documentation](scripts/README.md) - Utility scripts
 
-### AI & Backend
-- [Ollama Setup](backend/OLLAMA_SETUP.md) - Ollama AI setup
-- [LLama Setup](LLAMA_SETUP.md) - LLama model setup
+---
 
-## 🤝 Contributing
+## Project Status
+
+**Current Version: MVP (Minimum Viable Product)**
+
+This is a **production-ready prototype** with strong architecture and core functionality.
+
+### ✅ Completed Features
+
+- **Backend API**: Full CRUD operations, PDF generation, AI integration
+- **Authentication**: JWT-based authentication with refresh tokens
+- **AI Engine**: Hybrid model (Prophet + LSTM) with confidence intervals
+- **Mobile App**: Offline-first architecture, QR scanner, defect reporting
+- **Frontend Dashboard**: Interactive maps, statistics, charts
+- **Infrastructure**: Docker Compose, database seeding
+
+### 🚧 Known Limitations
+
+- Test coverage needs expansion
+- Push notifications not yet implemented
+- Analytics integration pending
+
+---
+
+## Contributing
 
 This is a proprietary project. For contributions, please contact the maintainers.
 
-## 📄 License
+---
+
+## License
 
 Proprietary Software. Developed for Tutas Safe AI.
 
-## 🙏 Acknowledgments
+---
+
+## Acknowledgments
 
 Built with:
 - [FastAPI](https://fastapi.tiangolo.com/) - Modern Python web framework
@@ -313,3 +325,12 @@ Built with:
 - [React](https://reactjs.org/) - Frontend library
 - [PostgreSQL](https://www.postgresql.org/) - Database
 - [Docker](https://www.docker.com/) - Containerization
+
+---
+
+## Support
+
+For issues and questions:
+- Check [Documentation](#documentation) section
+- Review component-specific README files
+- Contact project maintainers
