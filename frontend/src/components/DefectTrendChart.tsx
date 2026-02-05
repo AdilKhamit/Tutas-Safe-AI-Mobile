@@ -1,10 +1,10 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Area, AreaChart, ComposedChart } from 'recharts';
+import { Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Area, ComposedChart } from 'recharts';
 
 interface DefectTrendChartProps {
   data?: Array<{ date: string; count: number; critical: number; predicted?: number; predictedCritical?: number }>;
 }
 
-export const DefectTrendChart: React.FC<DefectTrendChartProps> = ({ data }) => {
+export const DefectTrendChart: React.FC<DefectTrendChartProps> = () => {
   // Get current date
   const currentDate = new Date();
   const currentMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;

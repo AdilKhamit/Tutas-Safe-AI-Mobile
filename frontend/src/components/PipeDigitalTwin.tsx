@@ -11,7 +11,6 @@ interface PipeDigitalTwinProps {
 export const PipeDigitalTwin: React.FC<PipeDigitalTwinProps> = ({ pipe }) => {
   // Calculate visual representation of wall thickness
   const wallThickness = pipe.wall_thickness_mm || 10; // Default 10mm
-  const diameter = pipe.diameter_mm || 200; // Default 200mm
   const maxThickness = 20; // Assume max thickness for visualization
   const thicknessRatio = Math.min(wallThickness / maxThickness, 1);
   

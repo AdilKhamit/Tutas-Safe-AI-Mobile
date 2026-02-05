@@ -53,5 +53,11 @@
 	<string>Для выбора фотографий из галереи необходимо разрешение на доступ к фотографиям</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Для сохранения фотографий дефектов необходимо разрешение на доступ к фотографиям</string>
+	<!-- Allow HTTP to local/backend IP for development (iOS blocks non-HTTPS by default) -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

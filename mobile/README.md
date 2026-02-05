@@ -301,6 +301,57 @@ For detailed testing documentation, see [test/README.md](test/README.md).
 3. Ensure device and computer are on same network
 4. Check firewall settings (port 8000)
 
+### Login: loading animation then nothing
+
+**Problem:** After tapping "Вход" (Sign in), the loading spinner appears and the app never continues.
+
+**Cause:** The login request had no timeout, so if the backend is unreachable (e.g. wrong `API_BASE_URL` on a physical device), the request could hang indefinitely.
+
+**What we did:** Added connect/receive timeouts (see `.env`: `CONNECT_TIMEOUT`, `RECEIVE_TIMEOUT`) to the login request. After 10–30 seconds you will see an error message (e.g. "Сервер недоступен") instead of endless loading.
+
+**Check:**
+1. Backend is running and reachable.
+2. On a **physical device**, `API_BASE_URL` in `.env` must be your computer's IP (e.g. `http://192.168.1.100:8000`), not `localhost` — on the device, localhost is the device itself.
+3. Create a user if needed: `python scripts/register_user.py` (see project root).
+
+### "Сервер недоступен" (Server unavailable) — пошагово
+
+Если при входе появляется сообщение «Сервер недоступен»:
+
+1. **Запустите бэкенд** (из корня проекта):
+   ```bash
+   docker compose up -d
+   # или без Docker:
+   cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000
+   ```
+
+2. **Узнайте IP компьютера** (Mac/Linux):
+   ```bash
+   ifconfig | grep "inet " | grep -v 127.0.0.1
+   ```
+   Возьмите адрес вида `192.168.x.x` (тот, что в той же Wi‑Fi сети, что и телефон).
+
+3. **В папке `mobile/`** создайте или отредактируйте файл `.env`:
+   ```bash
+   cd mobile
+   cp .env.example .env
+   # В .env замените:
+   API_BASE_URL=http://ВАШ_IP:8000
+   ```
+   Пример: `API_BASE_URL=http://192.168.1.100:8000`. Без завершающего слэша.
+
+4. **Телефон и компьютер** должны быть в одной Wi‑Fi сети.
+
+5. **Проверьте с компьютера**, что API отвечает:
+   ```bash
+   curl http://ВАШ_IP:8000/health
+   ```
+   Должен вернуться JSON с `"status":"ok"` или аналогично.
+
+6. **Перезапустите приложение** (полная пересборка не обязательна; `.env` читается при старте).
+
+В режиме отладки внизу экрана входа показывается текущий `API: ...` — сверьте, что там указан адрес вашего компьютера, а не `localhost`.
+
 ### QR Code Issues
 
 **Problem:** QR code not recognized
@@ -331,6 +382,58 @@ cd ..
 flutter clean
 flutter pub get
 ```
+
+### iOS: "Cannot create a FlutterEngine instance in debug mode" / ptrace
+
+**Problem:** When running `flutter run` from terminal on a **physical iPhone**, you see:
+`Could not call ptrace(PT_TRACE_ME): Operation not permitted` and debug mode fails.
+
+**Solutions:**
+1. **Run from Xcode** (recommended for debug): open `ios/Runner.xcworkspace` in Xcode, select your device, press Run (▶).
+2. **Or run in profile/release from terminal:**  
+   `flutter run --profile` or `flutter run --release`  
+   The app will install and run on the device without debugger.
+
+### iOS: "Hang detected" / app loads slowly
+
+**Problem:** Console shows "Hang detected: 1.91s (debugger attached, not reporting)" and the app takes a long time to show the first screen.
+
+**What we did:** Seed data (test pipes/defects in debug) now runs in the background after the first frame, so the UI appears faster. The first frame is no longer blocked by database seeding.
+
+**If it still feels slow:** Run in profile mode (`flutter run --profile`) — debug mode is slower due to JIT and the debugger.
+
+### iOS: "CLIENT OF UIKIT REQUIRES UPDATE" / UIScene
+
+**Problem:** Warning: "This process does not adopt UIScene lifecycle. This will become an assert in a future version."
+
+**Solution:** Enable Flutter's official UIScene migration (once per machine):
+
+```bash
+flutter config --enable-uiscene-migration
+```
+
+Then run or build iOS as usual. This updates the iOS project to use the scene-based lifecycle.
+
+### iOS: CFPrefsPlistSource / AppleLanguages
+
+**Problem:** Console shows "Value for key AppleLanguages was (ru-KZ, kk-KZ, en-KZ). Expected (ru-KZ, kk-KZ)".
+
+**Note:** This is a system preference message from iOS, not from the app. It is harmless and can be ignored.
+
+### "Result accumulator timeout" in console
+
+**Problem:** Log shows `Result accumulator timeout: 0.250000, exceeded.`
+
+**Note:** This comes from TensorFlow Lite (used e.g. for image/ML features). It is a benign internal timing message and can be ignored.
+
+### iOS: App Groups / ML Kit / "client is not entitled"
+
+**Problem:** Console shows:
+- `container_create_or_lookup_app_group_path_by_app_group_identifier: client is not entitled`
+- `[MLKITx_GIPPseudonymousIDStore initializeStorage]: Shared App Groups unavailable`
+- `GTMSessionFetcher ... was already running`
+
+**Note:** These come from Google ML Kit (used by `mobile_scanner` for QR). The SDK optionally uses App Groups; the app does not use that entitlement, so it falls back and works normally. Safe to ignore.
 
 ### Installation Issues
 

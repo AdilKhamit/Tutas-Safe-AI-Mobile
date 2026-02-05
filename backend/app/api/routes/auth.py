@@ -1,33 +1,44 @@
 """
 Authentication routes
 """
+import os
+import uuid
 from datetime import timedelta
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.api.deps import get_db
+from app.core.config import settings
 from app.core.security import (
-    verify_password,
-    get_password_hash,
     create_access_token,
     create_refresh_token,
     decode_token,
+    get_password_hash,
+    verify_password,
 )
-from app.core.config import settings
 from app.models.users import User
 from app.schemas.auth import (
     LoginRequest,
+    RefreshTokenRequest,
     Token,
     UserCreate,
     UserResponse,
-    RefreshTokenRequest,
 )
-import uuid
 
 router = APIRouter()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+
+# API keys for optional auth (e.g. generate-card when not logged in)
+_VALID_API_KEYS = [
+    k.strip()
+    for k in os.getenv("API_KEYS", "dev-api-key-12345").split(",")
+    if k.strip()
+]
 
 
 async def get_current_user(
@@ -67,6 +78,36 @@ async def get_current_user(
         )
     
     return user
+
+
+async def get_current_user_or_api_key(
+    token: str = Depends(oauth2_scheme),
+    db: AsyncSession = Depends(get_db),
+) -> Optional[User]:
+    """
+    Return current user from JWT, or None if token is a valid API key.
+    Allows endpoints (e.g. generate inspection card) to work with API key when user is not logged in.
+    """
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    payload = decode_token(token)
+    if payload:
+        user_id = payload.get("sub")
+        if user_id:
+            try:
+                user_uuid = uuid.UUID(user_id)
+                result = await db.execute(select(User).where(User.id == user_uuid))
+                user = result.scalar_one_or_none()
+                if user and user.is_active:
+                    return user
+            except ValueError:
+                pass
+    if token in _VALID_API_KEYS:
+        return None  # API key auth: no user, caller uses payload defaults
+    raise credentials_exception
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)

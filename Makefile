@@ -21,6 +21,11 @@ up: ## Start all services in background
 	docker-compose up -d
 	@echo "$(GREEN)✅ Services started. Use 'make logs' to view logs.$(NC)"
 
+up-backend: ## Start only backend stack (db, redis, minio, backend) — for mobile dev
+	@echo "$(BLUE)🚀 Starting backend stack (db, redis, minio, backend)...$(NC)"
+	docker-compose up -d db redis minio minio-init backend
+	@echo "$(GREEN)✅ Backend ready. API: http://localhost:8000 Use 'make logs-backend' to view logs.$(NC)"
+
 down: ## Stop all services
 	@echo "$(BLUE)🛑 Stopping all services...$(NC)"
 	docker-compose down

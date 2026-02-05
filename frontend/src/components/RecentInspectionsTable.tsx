@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, Tag, Space } from 'antd';
-import { ClockCircleOutlined, CheckCircleOutlined, WarningOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined } from '@ant-design/icons';
 import type { Pipe } from '../types';
 
 interface RecentInspectionsTableProps {

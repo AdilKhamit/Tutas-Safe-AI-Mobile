@@ -1,11 +1,10 @@
 import React from 'react';
-import { Layout, Card, Statistic, Row, Col, Typography, Space, List, Avatar, Badge, Button } from 'antd';
+import { Layout, Card, Statistic, Row, Col, Typography, Space, Badge, Button } from 'antd';
 import { 
   LineChartOutlined, 
   WarningOutlined, 
   CheckCircleOutlined,
   GlobalOutlined,
-  FireOutlined,
   ThunderboltOutlined,
   SettingOutlined
 } from '@ant-design/icons';
@@ -38,7 +37,7 @@ export const Dashboard: React.FC = () => {
   };
 
   // Mock sparkline data for statistics cards
-  const mockSparklineData = Array.from({ length: 12 }, (_, i) => ({
+  const mockSparklineData = Array.from({ length: 12 }, () => ({
     value: Math.floor(Math.random() * 20) + 10,
   }));
 

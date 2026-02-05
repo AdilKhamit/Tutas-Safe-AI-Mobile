@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker } from 'react-leaflet';
+import { MapContainer, TileLayer, Popup, Polyline, CircleMarker } from 'react-leaflet';
 import { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -101,15 +101,17 @@ export const MapWidget: React.FC<MapWidgetProps> = ({ pipes: propPipes }) => {
       
       {/* Heatmap lines - colored paths between pipes */}
       {heatmapPaths.map((path, index) => {
+        const p0 = path[0] as [number, number];
+        const p1 = path[1] as [number, number];
         const pipe1 = displayPipes.find((p) => 
           p.location && 
-          Math.abs(p.location.lat - path[0][0]) < 0.0001 &&
-          Math.abs(p.location.lon - path[0][1]) < 0.0001
+          Math.abs(p.location.lat - p0[0]) < 0.0001 &&
+          Math.abs(p.location.lon - p0[1]) < 0.0001
         );
         const pipe2 = displayPipes.find((p) => 
           p.location && 
-          Math.abs(p.location.lat - path[1][0]) < 0.0001 &&
-          Math.abs(p.location.lon - path[1][1]) < 0.0001
+          Math.abs(p.location.lat - p1[0]) < 0.0001 &&
+          Math.abs(p.location.lon - p1[1]) < 0.0001
         );
         
         const avgRisk = pipe1 && pipe2 

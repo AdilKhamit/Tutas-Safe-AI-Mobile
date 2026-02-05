@@ -5,7 +5,7 @@ import logging
 from fastapi import FastAPI, Request, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from app.api.routes import pipes, chat, auth
+from app.api.routes import pipes, chat, auth, inspections
 from app.core.config import settings
 
 # Configure logging
@@ -93,6 +93,7 @@ async def api_key_middleware(request: Request, call_next):
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(pipes.router, prefix="/api/v1/pipes", tags=["pipes"])
 app.include_router(chat.router, prefix="/api/v1", tags=["chat"])
+app.include_router(inspections.router, prefix="/api/v1/inspections", tags=["inspections"])
 
 
 @app.get("/health")
