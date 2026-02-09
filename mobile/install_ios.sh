@@ -12,6 +12,12 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
+# Напоминание про режим разработчика (iOS 16+)
+echo -e "\n${YELLOW}⚠ На iPhone должен быть включён Режим разработчика:${NC}"
+echo "   Настройки → Конфиденциальность и безопасность → Режим разработчика → Вкл."
+echo "   Подробнее: см. SETUP_IPHONE.md"
+echo ""
+
 # Проверка Flutter
 if ! command -v flutter &> /dev/null; then
     echo -e "${RED}✗ Flutter не установлен${NC}"
